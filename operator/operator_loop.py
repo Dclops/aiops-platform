@@ -5,6 +5,24 @@ import time
 import os
 import warnings
 
+from flask import Flask
+import threading
+
+health_app = Flask(__name__)
+
+@health_app.route("/healthz")
+def healthz():
+    return "ok", 200
+
+@health_app.route("/ready")
+def ready():
+    return "ready", 200
+
+def start_health_server():
+    health_app.run(host="0.0.0.0", port=8080)
+
+threading.Thread(target=start_health_server, daemon=True).start()
+
 warnings.filterwarnings("ignore")
 
 PROMETHEUS_URL = os.getenv("PROMETHEUS_URL", "http://prometheus-server.default.svc.cluster.local")
@@ -44,7 +62,7 @@ engine = IncidentDecisionEngine()
 actor = KubernetesActor(namespace=NAMESPACE)
 
 print("=" * 50)
-print("  AIOps Platform v15 - Production Operator")
+print("  AIOps Platform v16 - Production Operator")
 print("  Target: " + DEPLOYMENT_NAME)
 print("  Cooldown: " + str(COOLDOWN) + "s")
 print("=" * 50)
